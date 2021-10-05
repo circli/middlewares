@@ -62,4 +62,27 @@ final class JsonContentHandlerTest extends TestCase
 
 		$handler->process($mockRequest, $mockHandler);
 	}
+
+	public function testSizeNull(): void
+	{
+		$payload = ['test' => 1];
+		$payloadStr = json_encode($payload);
+
+		$mockStream = $this->createMock(StreamInterface::class);
+		$mockStream->expects($this->once())->method('getSize')->willReturn(null);
+		$mockStream->expects($this->once())->method('getContents')->willReturn($payloadStr);
+		$mockStream->expects($this->once())->method('__toString')->willReturn($payloadStr);
+
+		$handler = new JsonContentHandler();
+		$mockRequest = $this->createMock(ServerRequestInterface::class);
+		$mockRequest->expects($this->once())->method('getMethod')->willReturn('POST');
+		$mockRequest->expects($this->once())->method('getHeaderLine')->willReturn('application/json');
+		$mockRequest->expects($this->exactly(3))->method('getBody')->willReturn($mockStream);
+		$mockRequest->expects($this->once())->method('withParsedBody')->with($payload)->willReturn($mockRequest);
+
+		$mockHandler = $this->createMock(RequestHandlerInterface::class);
+		$mockHandler->expects($this->once())->method('handle')->with($mockRequest);
+
+		$handler->process($mockRequest, $mockHandler);
+	}
 }

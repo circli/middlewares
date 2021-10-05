@@ -21,7 +21,8 @@ class JsonContentHandler implements MiddlewareInterface
 
 			if (preg_match('~^application/([a-z.]+\+)?json($|;)~', $mime) && !$request->getParsedBody()) {
 				$body = [];
-				if ($request->getBody()->getSize()) {
+				$size = $request->getBody()->getSize() ?? $request->getBody()->getContents() !== '';
+				if ($size) {
 					$body = json_decode((string)$request->getBody(), true);
 					if (json_last_error()) {
 						throw new \RuntimeException('Error parsing JSON: ' . json_last_error_msg());
